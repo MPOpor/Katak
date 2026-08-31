@@ -1,0 +1,44 @@
+# Environment Configuration & Secret Keys (CRITICAL: DO NOT COMMIT)
+.env
+.env.local
+.env.*.local
+server/.env
+
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Production Build outputs
+client/dist/
+dist/
+
+# Uploaded slip images & files
+uploads/
+server/uploads/
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.pdf
+
+# SQLite Database & Storage
+*.sqlite
+*.sqlite-journal
+*.db
+server/db/*.sqlite
+
+# Logs & Debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# IDE & OS System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Cloudflared / Tunnel Local Configs
+.cloudflared/
+cert.pem

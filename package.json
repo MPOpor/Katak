@@ -1,0 +1,29 @@
+{
+  "name": "smart-expense-ocr-system",
+  "version": "1.0.0",
+  "description": "Smart Income and Expense Recording and Management System using Google OCR & Thai Voice Recognition - Thanachote Souvenir Shop Case Study",
+  "scripts": {
+    "start": "node server/server.js",
+    "tunnel": "npx localtunnel --port 5000 --subdomain thanachote-expense-ocr",
+    "tunnel:fixed": "npx localtunnel --port 5000 --subdomain thanachote-expense-ocr",
+    "tunnel:cf-quick": "npx cloudflared tunnel --url http://localhost:5000",
+    "tunnel:katak": "npx cloudflared tunnel run --url http://localhost:5000 katak",
+    "tunnel:cf-token": "npx cloudflared tunnel run --token %CLOUDFLARE_TUNNEL_TOKEN%",
+    "tunnel:ngrok": "npx ngrok http 5000",
+    "seed": "node server/db/seed.js",
+    "build": "cd client && npm run build",
+    "server": "node --watch server/server.js",
+    "client": "cd client && npm run dev"
+  },
+  "keywords": [
+    "expense-tracker",
+    "google-vision-ocr",
+    "cloudflare-tunnel",
+    "localtunnel",
+    "voice-recognition",
+    "line-liff",
+    "thanachote"
+  ],
+  "author": "Nicha & Kanjanaporn",
+  "license": "MIT"
+}
