@@ -32,6 +32,11 @@ export const apiLineLogin = (payload) => fetchApi('/auth/line-login', {
   method: 'POST',
   body: JSON.stringify(payload)
 });
+export const apiGetGoogleAuthConfig = () => fetchApi('/auth/google/config');
+export const apiGoogleLogin = (payload) => fetchApi('/auth/google/login', {
+  method: 'POST',
+  body: JSON.stringify(payload)
+});
 
 // Workspaces
 export const apiGetWorkspaces = () => fetchApi('/workspaces');
@@ -144,3 +149,22 @@ export const apiGetFlexPreview = (templateType, data) => fetchApi('/line/flex-pr
   method: 'POST',
   body: JSON.stringify({ templateType, data })
 });
+
+// Google Integrations & Export
+export const apiGetGoogleStatus = () => fetchApi('/integrations/google/status');
+export const apiTestGoogleConnection = (data) => fetchApi('/integrations/google/test', {
+  method: 'POST',
+  body: JSON.stringify(data || {})
+});
+export const apiSyncGoogleSheets = (data) => fetchApi('/integrations/google/sync', {
+  method: 'POST',
+  body: JSON.stringify(data || {})
+});
+export const apiUpdateGoogleConfig = (data) => fetchApi('/integrations/google/config', {
+  method: 'POST',
+  body: JSON.stringify(data || {})
+});
+export const apiGetExportCsvUrl = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return `/api/integrations/export/csv?${query}`;
+};

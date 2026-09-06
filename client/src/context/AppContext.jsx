@@ -6,7 +6,8 @@ import {
   apiSwitchUser,
   apiGetWorkspaces,
   apiGetCategories,
-  apiGetOverview
+  apiGetOverview,
+  apiGetGoogleStatus
 } from '../services/api';
 
 const AppContext = createContext(null);
@@ -44,7 +45,11 @@ export const AppProvider = ({ children }) => {
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [isLinePreviewOpen, setIsLinePreviewOpen] = useState(false);
+  const [isGoogleSyncModalOpen, setIsGoogleSyncModalOpen] = useState(false);
   const [drilldownCategory, setDrilldownCategory] = useState(null);
+
+  // Google Integration Status
+  const [googleStatus, setGoogleStatus] = useState(null);
 
   // Toast / Alerts
   const [toast, setToast] = useState(null);
@@ -151,6 +156,19 @@ export const AppProvider = ({ children }) => {
     showToast(`สลับไปยังพื้นที่: ${ws.name}`, 'info');
   };
 
+  const refreshGoogleStatus = async () => {
+    try {
+      const res = await apiGetGoogleStatus();
+      setGoogleStatus(res);
+    } catch (e) {
+      console.warn('Could not fetch Google status:', e.message);
+    }
+  };
+
+  useEffect(() => {
+    refreshGoogleStatus();
+  }, []);
+
   return (
     <AppContext.Provider
       value={{
@@ -174,6 +192,8 @@ export const AppProvider = ({ children }) => {
         isMembersModalOpen,
         isAuditModalOpen,
         isLinePreviewOpen,
+        isGoogleSyncModalOpen,
+        googleStatus,
         drilldownCategory,
         setPeriod,
         setStartDate,
@@ -187,6 +207,8 @@ export const AppProvider = ({ children }) => {
         setIsMembersModalOpen,
         setIsAuditModalOpen,
         setIsLinePreviewOpen,
+        setIsGoogleSyncModalOpen,
+        refreshGoogleStatus,
         setDrilldownCategory,
         handleSwitchUser,
         handleSwitchWorkspace,

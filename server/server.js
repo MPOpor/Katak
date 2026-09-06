@@ -22,6 +22,7 @@ import ocrRouter from './routes/ocr.js';
 import voiceRouter from './routes/voice.js';
 import adminRouter from './routes/admin.js';
 import lineRouter from './routes/line.js';
+import integrationsRouter from './routes/integrations.js';
 
 // Initialize SQLite database
 initDatabase();
@@ -69,6 +70,7 @@ app.use('/api/ocr', ocrRouter);
 app.use('/api/voice', voiceRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/line', lineRouter);
+app.use('/api/integrations', integrationsRouter);
 
 // Fallback to client index.html for SPA routing
 if (fs.existsSync(clientDistPath)) {

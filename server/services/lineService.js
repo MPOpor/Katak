@@ -128,7 +128,7 @@ export function verifyLineSignature(rawBody, signature) {
 /**
  * Download media content (slip image / audio / document) from LINE Content API
  */
-export async function downloadLineContent(messageId) {
+export async function downloadLineContent(messageId, defaultExt = 'jpg') {
   const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   if (!token || token === 'YOUR_LINE_CHANNEL_ACCESS_TOKEN_HERE') {
     console.log('   [3/6 ℹ️ Download] LINE_CHANNEL_ACCESS_TOKEN is not configured.');
@@ -149,12 +149,13 @@ export async function downloadLineContent(messageId) {
     }
 
     const buffer = res.buffer;
-    const filename = `line_slip_${Date.now()}_${messageId}.jpg`;
+    const prefix = defaultExt === 'm4a' || defaultExt === 'mp3' ? 'line_voice' : 'line_slip';
+    const filename = `${prefix}_${Date.now()}_${messageId}.${defaultExt}`;
     const filePath = path.join(uploadDir, filename);
 
     fs.writeFileSync(filePath, buffer);
     const sizeKB = (buffer.length / 1024).toFixed(1);
-    console.log(`   [3/6 ✅ Download] Saved image to uploads/${filename} (Size: ${sizeKB} KB)`);
+    console.log(`   [3/6 ✅ Download] Saved file to uploads/${filename} (Size: ${sizeKB} KB)`);
 
     return {
       filePath,
@@ -249,7 +250,7 @@ export function buildWelcomeFlexMessage(displayName, publicAppUrl) {
 
   return {
     type: 'flex',
-    altText: 'ยินดีต้อนรับสู่ ป้านวล บัญชีรายรับ-รายจ่ายอัจฉริยะ',
+    altText: 'ยินดีต้อนรับสู่ Katak บัญชีรายรับ-รายจ่ายอัจฉริยะ',
     contents: {
       type: 'bubble',
       size: 'kilo',
@@ -261,7 +262,7 @@ export function buildWelcomeFlexMessage(displayName, publicAppUrl) {
         contents: [
           {
             type: 'text',
-            text: '✨ ป้านวล (ร้านขายของฝากไร่ธนโชติ)',
+            text: '✨ Katak (ระบบบัญชีอัจฉริยะ)',
             color: '#FFFFFF',
             size: 'xs',
             weight: 'bold'

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { apiGetTransactions, apiDeleteTransaction } from '../services/api';
+import { apiGetTransactions, apiDeleteTransaction, apiGetExportCsvUrl } from '../services/api';
 import {
   Search,
   Filter,
@@ -22,7 +22,10 @@ import {
   ShoppingCart,
   HeartPulse,
   Tag,
-  X
+  X,
+  Cloud,
+  Download,
+  ExternalLink
 } from 'lucide-react';
 
 export default function TransactionList({ filterKeyword, onClearKeyword }) {
@@ -138,32 +141,45 @@ export default function TransactionList({ filterKeyword, onClearKeyword }) {
           )}
         </div>
 
-        {/* Type Filter Pills */}
-        <div className="flex items-center bg-gray-100 p-0.5 rounded-xl text-xs self-start sm:self-auto">
-          <button
-            onClick={() => setTypeFilter('all')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition ${
-              typeFilter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
-            }`}
+        {/* Type Filter Pills & Export CSV */}
+        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+          <div className="flex items-center bg-gray-100 p-0.5 rounded-xl text-xs">
+            <button
+              onClick={() => setTypeFilter('all')}
+              className={`px-3 py-1.5 rounded-lg font-medium transition ${
+                typeFilter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+              }`}
+            >
+              ทั้งหมด
+            </button>
+            <button
+              onClick={() => setTypeFilter('income')}
+              className={`px-3 py-1.5 rounded-lg font-medium transition ${
+                typeFilter === 'income' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500'
+              }`}
+            >
+              รายรับ
+            </button>
+            <button
+              onClick={() => setTypeFilter('expense')}
+              className={`px-3 py-1.5 rounded-lg font-medium transition ${
+                typeFilter === 'expense' ? 'bg-white text-rose-600 shadow-sm' : 'text-gray-500'
+              }`}
+            >
+              รายจ่าย
+            </button>
+          </div>
+
+          {/* Export CSV Download Link */}
+          <a
+            href={apiGetExportCsvUrl({ workspace_id: currentWorkspace?.id, period, startDate, endDate })}
+            download
+            title="ส่งออกรายงานรายการทั้งหมดเป็น CSV สำหรับ Excel"
+            className="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-[#D97706] font-semibold text-xs border border-amber-200 flex items-center gap-1 shadow-sm transition"
           >
-            ทั้งหมด
-          </button>
-          <button
-            onClick={() => setTypeFilter('income')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition ${
-              typeFilter === 'income' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500'
-            }`}
-          >
-            รายรับ
-          </button>
-          <button
-            onClick={() => setTypeFilter('expense')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition ${
-              typeFilter === 'expense' ? 'bg-white text-rose-600 shadow-sm' : 'text-gray-500'
-            }`}
-          >
-            รายจ่าย
-          </button>
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Export CSV</span>
+          </a>
         </div>
       </div>
 
@@ -248,12 +264,23 @@ export default function TransactionList({ filterKeyword, onClearKeyword }) {
                                 {tx.user_name || 'ผู้ใช้'}
                               </span>
                               {tx.slip_url && (
-                                <button
-                                  onClick={() => setSelectedSlip(tx.slip_url)}
-                                  className="text-[#D97706] hover:underline flex items-center gap-0.5 font-medium ml-1"
-                                >
-                                  <ImageIcon className="w-2.5 h-2.5" /> ดูสลิป
-                                </button>
+                                tx.slip_url.includes('drive.google.com') ? (
+                                  <a
+                                    href={tx.slip_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline flex items-center gap-0.5 font-medium ml-1 bg-blue-50 px-1.5 py-0.5 rounded"
+                                  >
+                                    <Cloud className="w-2.5 h-2.5" /> Drive <ExternalLink className="w-2 h-2" />
+                                  </a>
+                                ) : (
+                                  <button
+                                    onClick={() => setSelectedSlip(tx.slip_url)}
+                                    className="text-[#D97706] hover:underline flex items-center gap-0.5 font-medium ml-1"
+                                  >
+                                    <ImageIcon className="w-2.5 h-2.5" /> ดูสลิป
+                                  </button>
+                                )
                               )}
                             </div>
                           </div>

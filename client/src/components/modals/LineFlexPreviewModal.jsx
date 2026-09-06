@@ -48,7 +48,7 @@ export default function LineFlexPreviewModal() {
             id: 'msg_welcome',
             sender: 'bot',
             time: '14:20',
-            text: 'สวัสดีค่ะคุณ ' + (currentUser?.display_name?.split(' ')[0] || 'ลูกค้า') + ' 🙏 ยินดีต้อนรับสู่ระบบบัญชี ป้านวล (ร้านขายของฝากไร่ธนโชติ)\n\nสามารถส่งรูปภาพ "สลิปโอนเงิน" หรือ "ใบเสร็จ" เข้ามาในแชทนี้ได้เลยค่ะ ระบบ OCR จะสแกนและสรุปข้อมูลให้ทันทีค่ะ ✨'
+            text: 'สวัสดีค่ะคุณ ' + (currentUser?.display_name?.split(' ')[0] || 'ลูกค้า') + ' 🙏 ยินดีต้อนรับสู่ระบบบัญชี Katak (ร้านขายของฝากไร่ธนโชติ)\n\nสามารถส่งรูปภาพ "สลิปโอนเงิน" หรือ "ใบเสร็จ" เข้ามาในแชทนี้ได้เลยค่ะ ระบบ OCR จะสแกนและสรุปข้อมูลให้ทันทีค่ะ ✨'
           }
         ]);
       }
@@ -161,13 +161,13 @@ export default function LineFlexPreviewModal() {
           <div className="flex items-center gap-2.5">
             <div className="relative">
               <div className="w-10 h-10 rounded-full bg-white text-[#00B900] flex items-center justify-center font-bold text-sm shadow-inner">
-                ป้านวล
+                Katak
               </div>
               <ShieldCheck className="w-4 h-4 text-emerald-300 absolute -bottom-0.5 -right-0.5 bg-[#00B900] rounded-full" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h3 className="text-sm font-bold leading-tight">ป้านวล บัญชีอัจฉริยะ</h3>
+                <h3 className="text-sm font-bold leading-tight">Katak บัญชีอัจฉริยะ</h3>
                 <span className="text-[10px] px-1.5 py-0.2 rounded bg-white/20 text-white font-medium">LINE OA</span>
               </div>
               <p className="text-[11px] text-white/90 leading-tight">
@@ -222,7 +222,7 @@ export default function LineFlexPreviewModal() {
             return (
               <div key={msg.id} className="flex items-start gap-2 max-w-[90%] animate-slide-up">
                 <div className="w-8 h-8 rounded-full bg-[#00B900] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-md mt-1">
-                  ป้านวล
+                  Katak
                 </div>
 
                 <div className="space-y-1 flex-1">
@@ -327,7 +327,7 @@ export default function LineFlexPreviewModal() {
                           }}
                           className="w-full py-2 bg-[#F59E0B] hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
                         >
-                          📊 ดูสรุปการเงินบน LIFF (ป้านวล)
+                          📊 ดูสรุปการเงินบน LIFF (Katak)
                         </button>
 
                         <button
@@ -353,7 +353,7 @@ export default function LineFlexPreviewModal() {
           {processing && (
             <div className="flex items-center gap-2 text-white text-xs animate-pulse">
               <div className="w-8 h-8 rounded-full bg-[#00B900] text-white flex items-center justify-center font-bold text-xs shadow-md">
-                ป้านวล
+                Katak
               </div>
               <div className="bg-white text-gray-800 rounded-2xl rounded-tl-xs p-3 shadow-md flex items-center gap-2">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#00B900]" />

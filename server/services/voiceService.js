@@ -1,6 +1,87 @@
 /**
- * Thai Speech-to-Text Natural Language & Intent Entity Parsing Service
+ * Transcribes and extracts income/expense information from Audio using Google Gemini Multimodal AI
  */
+export async function transcribeAudioWithGemini(audioBuffer, mimeType = 'audio/m4a') {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GOOGLE_VISION_API_KEY;
+  if (!apiKey || !audioBuffer) {
+    return {
+      transcript: '',
+      type: 'expense',
+      amount: 0,
+      category: 'ค่าใช้จ่ายทั่วไป',
+      confidence: 0
+    };
+  }
+
+  const base64Audio = Buffer.isBuffer(audioBuffer) ? audioBuffer.toString('base64') : '';
+  const candidateModels = [
+    'gemini-3.5-flash',
+    'gemini-flash-latest',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash'
+  ];
+
+  const promptText = `คุณคือ AI ผู้เชี่ยวชาญการถอดเสียงภาษาไทยและสกัดข้อมูลรายรับ-รายจ่ายของร้านค้า
+กรุณาฟังเสียงภาษาไทยที่แนบมานี้อย่างละเอียด ถอดเสียงข้อความทั้งหมด และระบุรายการรายรับ-รายจ่ายออกมาในรูปแบบ JSON:
+{
+  "transcript": "ข้อความภาษาไทยทั้งหมดที่พูดในคลิปเสียง เช่น ขายของฝากได้ 500 บาท หรือ ซื้อกล่องพัสดุ 150 บาท",
+  "type": "income" (ถ้ารายรับ/ขายได้/ได้เงิน) หรือ "expense" (ถ้ารายจ่าย/ซื้อของ/จ่ายค่า...),
+  "amount": ตัวเลขยอดเงินสุทธิ Float เช่น 500.00 หรือ 0 (ถ้าไม่ได้พูดจำนวนเงิน),
+  "category": "หมวดหมู่ภาษาไทย เช่น ขายของหน้าร้าน, ค่าสินค้า/วัตถุดิบ, ค่าสาธารณูปโภค, ค่าแรงงาน, ค่าอาหารและเครื่องดื่ม, ค่าเดินทาง/ยานพาหนะ, รายรับอื่นๆ, ค่าใช้จ่ายทั่วไป",
+  "confidence": 98.5
+}`;
+
+  for (const model of candidateModels) {
+    try {
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const res = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: promptText },
+                {
+                  inline_data: {
+                    mime_type: mimeType || 'audio/m4a',
+                    data: base64Audio
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(cleanJson);
+          return {
+            transcript: parsed.transcript || '',
+            type: parsed.type || 'expense',
+            amount: parseFloat(parsed.amount) || 0,
+            category: parsed.category || 'ค่าใช้จ่ายทั่วไป',
+            confidence: parsed.confidence || 95
+          };
+        }
+      }
+    } catch (err) {
+      console.warn(`[Voice Model ${model}] Error:`, err.message);
+    }
+  }
+
+  return {
+    transcript: '',
+    type: 'expense',
+    amount: 0,
+    category: 'ค่าใช้จ่ายทั่วไป',
+    confidence: 0
+  };
+}
 
 export function parseThaiVoiceCommand(transcript) {
   if (!transcript || typeof transcript !== 'string') {

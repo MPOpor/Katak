@@ -1,4 +1,4 @@
-# 💰 ป้านวล (Pa Nual) - Smart Expense OCR & LINE OA Financial Management
+# 💰 Katak - Smart Expense OCR & LINE OA Financial Management
 
 ระบบบันทึกรายรับ-รายจ่ายอัจฉริยะ พร้อมระบบอ่านสลิปโอนเงินธนาคารด้วย **Google Gemini AI & Cloud Vision OCR**, ระบบสั่งการด้วยเสียงภาษาไทย (Thai Voice NLP), และหน้าเว็บแสดงผลสรุปบน **LINE LIFF** ในธีมสีเหลืองอ่อนพาสเทล (Soft Pastel Yellow)
 

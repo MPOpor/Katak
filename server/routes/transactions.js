@@ -1,6 +1,7 @@
 import express from 'express';
 import db from '../db/database.js';
 import { getCurrentUserId } from './auth.js';
+import { appendTransactionToSheet } from '../services/googleSheetsService.js';
 
 const router = express.Router();
 
@@ -162,12 +163,19 @@ router.post('/', (req, res) => {
 
     const created = db.prepare(`
       SELECT t.*, c.name as category_name, c.icon as category_icon, c.color as category_color,
-             u.display_name as user_name, u.picture_url as user_picture
+             u.display_name as user_name, u.picture_url as user_picture,
+             w.name as workspace_name
       FROM transactions t
       LEFT JOIN categories c ON t.category_id = c.id
       LEFT JOIN users u ON t.user_id = u.id
+      LEFT JOIN workspaces w ON t.workspace_id = w.id
       WHERE t.id = ?
     `).get(txId);
+
+    // Auto-append to Google Sheets (non-blocking)
+    try {
+      appendTransactionToSheet(created);
+    } catch (sheetErr) {}
 
     res.json({ success: true, data: created });
   } catch (error) {

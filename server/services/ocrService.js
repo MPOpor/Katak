@@ -1,3 +1,5 @@
+import db from '../db/database.js';
+
 /**
  * OCR Processing & Thai Slip / Receipt Entity Extraction Service
  * Includes OCR parsing regex, Bank slip detection, and Category Auto-matching
@@ -218,3 +220,65 @@ export const SAMPLE_SLIPS = [
     rawOcr: `7-ELEVEN (CP ALL PLC.)\nสาขา 14205 ไร่ธนโชติ\n24/08/2569 08:30 น.\nน้ำยาล้างจาน 55.00\nกระดาษทิชชู่ 95.00\nถุงขยะ 95.00\nรวมทั้งสิ้น / Total 245.00 บาท\nเงินสด Cash 300.00 บาท\nเงินทอน Change 55.00 บาท\nTHANK YOU`
   }
 ];
+
+/**
+ * Check if slip has already been recorded (Duplicate Detection)
+ */
+export function checkDuplicateSlip({ referenceNo, amount, date, time, bank, workspaceId = 'ws_thanachote' }) {
+  try {
+    // 1. Check by Reference Number (High confidence)
+    if (referenceNo && referenceNo.length >= 6 && referenceNo !== '-') {
+      const cleanRef = referenceNo.trim();
+      const refMatch = db.prepare(`
+        SELECT t.*, u.display_name as user_name
+        FROM transactions t
+        LEFT JOIN users u ON t.user_id = u.id
+        WHERE t.workspace_id = ? 
+          AND (t.ocr_metadata LIKE ? OR t.note LIKE ?)
+        LIMIT 1
+      `).get(workspaceId, `%${cleanRef}%`, `%${cleanRef}%`);
+
+      if (refMatch) {
+        return {
+          isDuplicate: true,
+          reason: `รหัสอ้างอิง ${cleanRef} ซ้ำกับรายการที่มีอยู่แล้ว`,
+          existingTx: refMatch
+        };
+      }
+    }
+
+    // 2. Check by exact Amount + Date within workspace
+    if (amount > 0 && date) {
+      const txs = db.prepare(`
+        SELECT t.*, u.display_name as user_name
+        FROM transactions t
+        LEFT JOIN users u ON t.user_id = u.id
+        WHERE t.workspace_id = ? 
+          AND t.transaction_date = ? 
+          AND ABS(t.amount - ?) < 0.01
+        LIMIT 5
+      `).all(workspaceId, date, parseFloat(amount));
+
+      for (const tx of txs) {
+        let meta = {};
+        try {
+          if (tx.ocr_metadata) meta = JSON.parse(tx.ocr_metadata);
+        } catch (e) {}
+
+        // If time matches or if same amount recorded on same date
+        if (time && meta.time && meta.time === time) {
+          return {
+            isDuplicate: true,
+            reason: `ตรวจพบสลิปยอดเงิน ฿${amount} บาท วันที่ ${date} เวลา ${time} บันทึกไปแล้ว`,
+            existingTx: tx
+          };
+        }
+      }
+    }
+
+    return { isDuplicate: false };
+  } catch (error) {
+    console.warn('⚠️ checkDuplicateSlip warning:', error.message);
+    return { isDuplicate: false };
+  }
+}

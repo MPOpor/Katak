@@ -18,6 +18,7 @@ import WorkspaceModal from './components/modals/WorkspaceModal';
 import MembersModal from './components/modals/MembersModal';
 import AuditTrailModal from './components/modals/AuditTrailModal';
 import LineFlexPreviewModal from './components/modals/LineFlexPreviewModal';
+import GoogleSyncModal from './components/modals/GoogleSyncModal';
 
 // Views
 import ManageView from './views/ManageView';
@@ -157,6 +158,7 @@ export default function App() {
         <MembersModal />
         <AuditTrailModal />
         <LineFlexPreviewModal />
+        <GoogleSyncModal />
         <DrilldownDrawer />
       </div>
     </div>

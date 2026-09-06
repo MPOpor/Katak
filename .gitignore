@@ -2,11 +2,23 @@
 .env
 .env.local
 .env.*.local
+env
 server/.env
+*.json
+!package.json
+!client/package.json
+!server/package.json
+!tsconfig.json
+!jsconfig.json
+
+# Credentials
+service-account*.json
+client_secret*.json
 
 # Dependencies
 node_modules/
 client/node_modules/
+server/node_modules/
 
 # Production Build outputs
 client/dist/
@@ -26,6 +38,9 @@ server/uploads/
 *.sqlite-journal
 *.db
 server/db/*.sqlite
+
+# Subfolders / Backups
+Katak-main/
 
 # Logs & Debugging
 npm-debug.log*

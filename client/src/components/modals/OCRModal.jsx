@@ -36,6 +36,7 @@ export default function OCRModal() {
   const [imagePreview, setImagePreview] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [step, setStep] = useState('upload'); // 'upload' -> 'preprocess' -> 'verify'
+  const [duplicateWarning, setDuplicateWarning] = useState(null);
 
   // Image Preprocessing controls
   const [grayscale, setGrayscale] = useState(true);
@@ -118,6 +119,12 @@ export default function OCRModal() {
   };
 
   const populateFormData = (res) => {
+    if (res.isDuplicate) {
+      setDuplicateWarning(res.duplicateReason || 'สลิปนี้อาจถูกบันทึกไปแล้ว');
+    } else {
+      setDuplicateWarning(null);
+    }
+
     const matchedCat = categories.find(c =>
       c.type === (res.suggestedType || 'income') &&
       c.name.includes(res.suggestedCategory || '')
@@ -386,6 +393,17 @@ export default function OCRModal() {
                   ความแม่นยำ AI: {formData.confidence}%
                 </div>
               </div>
+
+              {/* Duplicate Warning Banner */}
+              {duplicateWarning && (
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-3 flex items-start gap-2 animate-fade-in">
+                  <div className="p-1 bg-red-100 rounded-lg text-red-600 font-bold text-xs flex-shrink-0">⚠️</div>
+                  <div className="text-xs text-red-800">
+                    <strong>คำเตือน: ตรวจพบรายการซ้ำซ้อน!</strong>
+                    <p className="text-[11px] text-red-600 mt-0.5">{duplicateWarning}</p>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Left: Slip Image Preview */}

@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -7,21 +7,36 @@ const __dirname = path.dirname(__filename);
 const dbPath = path.resolve(__dirname, '../data/smart_expense.db');
 
 // Ensure data folder exists
-import fs from 'fs';
 const dataDir = path.resolve(__dirname, '../data');
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-const db = new Database(dbPath);
-db.pragma('foreign_keys = ON');
+let db;
+
+// Try native node:sqlite (Node 22.5+) first, with fallback to better-sqlite3
+try {
+  const { DatabaseSync } = await import('node:sqlite');
+  db = new DatabaseSync(dbPath);
+  db.exec('PRAGMA foreign_keys = ON;');
+} catch (e) {
+  try {
+    const { default: BetterSqlite3 } = await import('better-sqlite3');
+    db = new BetterSqlite3(dbPath);
+    db.pragma('foreign_keys = ON');
+  } catch (err2) {
+    throw new Error(`Failed to initialize SQLite database: ${e.message} / ${err2.message}`);
+  }
+}
 
 export function initDatabase() {
   db.exec(`
-    -- 1. Users Table (Support LINE Login OAuth 2.0 & Admin)
+    -- 1. Users Table (Support LINE Login & Google OAuth 2.0 & Admin)
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       line_user_id TEXT UNIQUE,
+      google_id TEXT UNIQUE,
+      email TEXT,
       display_name TEXT NOT NULL,
       picture_url TEXT,
       role TEXT DEFAULT 'user', -- 'admin', 'user'
@@ -99,41 +114,63 @@ export function initDatabase() {
     -- 6. Audit Trail (Log all additions, edits, deletions by member)
     CREATE TABLE IF NOT EXISTS audit_logs (
       id TEXT PRIMARY KEY,
-      workspace_id TEXT,
-      user_id TEXT,
-      action TEXT NOT NULL, -- 'create_transaction', 'edit_transaction', 'delete_transaction', 'join_group', 'update_budget'
+      workspace_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      action TEXT NOT NULL, -- 'create_transaction', 'edit_transaction', 'delete_transaction', 'update_role', 'google_sync'
       entity_id TEXT,
       details TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE,
-      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     );
 
-    -- 7. System Logs (For Admin monitoring)
+    -- 7. System Logs (Admin Portal, OCR & Voice Engine Status)
     CREATE TABLE IF NOT EXISTS system_logs (
       id TEXT PRIMARY KEY,
       level TEXT NOT NULL, -- 'INFO', 'WARN', 'ERROR'
-      module TEXT NOT NULL, -- 'AUTH', 'OCR', 'VOICE', 'LINE_API', 'TRANSACTION'
+      module TEXT NOT NULL, -- 'OCR', 'VOICE', 'AUTH', 'LINE', 'INTEGRATIONS'
       message TEXT NOT NULL,
       metadata TEXT,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
-    -- 8. Invitation Tokens
+    -- 8. Workspace Invites (QR / Share Links)
     CREATE TABLE IF NOT EXISTS workspace_invites (
       id TEXT PRIMARY KEY,
       workspace_id TEXT NOT NULL,
-      invite_code TEXT UNIQUE NOT NULL,
-      created_by TEXT NOT NULL,
+      code TEXT UNIQUE NOT NULL,
+      role TEXT DEFAULT 'member',
       expires_at DATETIME,
-      used_count INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE,
-      FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE CASCADE
+      FOREIGN KEY (workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE
     );
   `);
 
-  console.log('✅ SQLite Database schema initialized successfully.');
+  // Migrate columns for existing databases
+  try { db.exec("ALTER TABLE users ADD COLUMN google_id TEXT;"); } catch (e) {}
+  try { db.exec("ALTER TABLE users ADD COLUMN email TEXT;"); } catch (e) {}
+
+  console.log('✅ SQLite Database & Tables Initialized successfully.');
+
+  // Auto-seed if workspaces table is empty
+  try {
+    const row = db.prepare('SELECT count(*) as count FROM workspaces').get();
+    if (!row || row.count === 0) {
+      console.log('🌱 Workspaces table is empty. Auto-seeding initial database...');
+      import('./seed.js').then(m => {
+        if (typeof m.seedData === 'function') {
+          m.seedData();
+        }
+      }).catch(err => {
+        console.warn('⚠️ Auto-seeding warning:', err.message);
+      });
+    }
+  } catch (err) {
+    console.warn('⚠️ Could not check workspace count:', err.message);
+  }
 }
+
+// Ensure database tables and columns are ready
+initDatabase();
 
 export default db;

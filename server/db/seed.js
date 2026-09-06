@@ -26,7 +26,7 @@ export function seedData() {
   const users = [
     {
       id: 'usr_nicha',
-      line_user_id: 'U111122223333nicha',
+      line_user_id: 'U719338ac91753cefe6374e6a2bbf851f',
       display_name: 'ณิชา ทองอยู่ (เจ้าของร้าน)',
       picture_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
       role: 'admin',
@@ -430,7 +430,7 @@ export function seedData() {
 
   // 7. System Logs for Admin
   const insertSysLog = db.prepare(`
-    INSERT INTO system_logs (id, level, module, message, metadata, timestamp)
+    INSERT INTO system_logs (id, level, module, message, metadata, created_at)
     VALUES (?, ?, ?, ?, ?, ?)
   `);
 
@@ -475,10 +475,10 @@ export function seedData() {
 
   // 8. Default Invite Link
   const insertInvite = db.prepare(`
-    INSERT INTO workspace_invites (id, workspace_id, invite_code, created_by, expires_at)
+    INSERT INTO workspace_invites (id, workspace_id, code, role, expires_at)
     VALUES (?, ?, ?, ?, ?)
   `);
-  insertInvite.run('inv_1', 'ws_thanachote', 'THANACHOTE-2026', 'usr_nicha', '2026-12-31 23:59:59');
+  insertInvite.run('inv_1', 'ws_thanachote', 'THANACHOTE-2026', 'member', '2026-12-31 23:59:59');
 
   console.log('✅ Seed data created successfully!');
 }

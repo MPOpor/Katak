@@ -13,7 +13,10 @@ import {
   ChevronRight,
   Store,
   Wallet,
-  Sparkles
+  Sparkles,
+  Cloud,
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export default function ManageView() {
@@ -23,6 +26,7 @@ export default function ManageView() {
     setIsMembersModalOpen,
     setIsAuditModalOpen,
     setIsLinePreviewOpen,
+    setIsGoogleSyncModalOpen,
     currentUser
   } = useApp();
 
@@ -58,6 +62,14 @@ export default function ManageView() {
 
   const menuItems = [
     {
+      id: 'google_sync',
+      title: 'เชื่อมต่อ Google Drive & Sheets (Cloud Sync)',
+      desc: 'สำรองภาพสลิปบน Drive และซิงค์รายการลง Google Sheets',
+      icon: Cloud,
+      color: 'bg-emerald-100 text-emerald-600',
+      action: () => setIsGoogleSyncModalOpen(true)
+    },
+    {
       id: 'categories',
       title: 'จัดการหมวดหมู่รายรับ-รายจ่าย',
       desc: 'กำหนดหมวดหมู่เฉพาะของร้านค้า และส่วนบุคคล',
@@ -86,7 +98,7 @@ export default function ManageView() {
       title: 'จำลองการแจ้งเตือน LINE Flex Message',
       desc: 'ดูตัวอย่างบัตรแจ้งเตือนสรุปรายรับ-รายจ่าย และเตือนงบเกิน',
       icon: Bell,
-      color: 'bg-emerald-100 text-emerald-600',
+      color: 'bg-green-100 text-green-600',
       action: () => setIsLinePreviewOpen(true)
     },
     {

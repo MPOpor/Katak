@@ -3,8 +3,9 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { parseThaiSlipText, SAMPLE_SLIPS } from '../services/ocrService.js';
+import { parseThaiSlipText, SAMPLE_SLIPS, checkDuplicateSlip } from '../services/ocrService.js';
 import { performGoogleVisionOCR } from '../services/googleVisionService.js';
+import { uploadSlipToDrive } from '../services/googleDriveService.js';
 import db from '../db/database.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -150,15 +151,50 @@ router.post('/upload', upload.single('slip'), async (req, res) => {
     }
     const slipUrl = `/uploads/${req.file.filename}`;
     const filePath = req.file.path;
+    const { workspaceId = 'ws_thanachote' } = req.body;
 
-    // Run Google Vision OCR on uploaded image
+    // 1. Run Google Vision OCR on uploaded image
     const googleRes = await performGoogleVisionOCR(filePath);
+    const ocrData = googleRes.data || parseThaiSlipText(filePath);
+
+    // 2. Check for duplicate slip
+    const dupCheck = checkDuplicateSlip({
+      referenceNo: ocrData?.referenceNo,
+      amount: ocrData?.amount,
+      date: ocrData?.date,
+      time: ocrData?.time,
+      bank: ocrData?.bank,
+      workspaceId
+    });
+
+    // 3. Upload to Google Drive (if configured)
+    let driveUrl = null;
+    try {
+      const driveRes = await uploadSlipToDrive({
+        imageInput: filePath,
+        filename: req.file.filename,
+        mimeType: req.file.mimetype || 'image/jpeg',
+        dateStr: ocrData?.date
+      });
+      if (driveRes.success && driveRes.webViewLink) {
+        driveUrl = driveRes.webViewLink;
+        if (ocrData) {
+          ocrData.driveUrl = driveUrl;
+          ocrData.driveFileId = driveRes.fileId;
+        }
+      }
+    } catch (e) {}
 
     res.json({
       success: true,
-      slipUrl,
+      slipUrl: driveUrl || slipUrl,
+      localSlipUrl: slipUrl,
+      driveUrl,
       filename: req.file.filename,
-      ocrResult: googleRes.data || null,
+      ocrResult: ocrData,
+      isDuplicate: dupCheck.isDuplicate,
+      duplicateReason: dupCheck.reason || null,
+      existingTx: dupCheck.existingTx || null,
       engine: googleRes.engine
     });
   } catch (error) {
