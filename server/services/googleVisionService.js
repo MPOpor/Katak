@@ -35,10 +35,9 @@ export async function performGoogleVisionOCR(imageInput) {
   if (apiKey && apiKey !== 'YOUR_GOOGLE_VISION_API_KEY_HERE' && base64Image) {
     // Model candidates available for this Google API Key
     const candidateModels = [
+      'gemini-3.7-flash',
       'gemini-3.5-flash',
-      'gemini-flash-latest',
-      'gemini-2.5-pro',
-      'gemini-3.7-flash'
+      'gemini-flash-latest'
     ];
 
     for (const modelName of candidateModels) {
