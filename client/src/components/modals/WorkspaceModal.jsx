@@ -4,7 +4,7 @@ import { apiCreateWorkspace } from '../../services/api';
 import { Store, Users, Wallet, Plus, X, CheckCircle2 } from 'lucide-react';
 
 export default function WorkspaceModal() {
-  const { isWorkspaceModalOpen, setIsWorkspaceModalOpen, refreshData, showToast } = useApp();
+  const { isWorkspaceModalOpen, setIsWorkspaceModalOpen, refreshWorkspaces, showToast } = useApp();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -20,7 +20,7 @@ export default function WorkspaceModal() {
 
     setProcessing(true);
     try {
-      await apiCreateWorkspace({
+      const res = await apiCreateWorkspace({
         name: name.trim(),
         description: description.trim(),
         type,
@@ -32,7 +32,7 @@ export default function WorkspaceModal() {
       setDescription('');
       setBudgetLimit('');
       setIsWorkspaceModalOpen(false);
-      refreshData();
+      await refreshWorkspaces(res?.data?.id);
     } catch (err) {
       showToast('สร้างพื้นที่การเงินล้มเหลว: ' + err.message, 'error');
     } finally {

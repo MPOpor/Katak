@@ -156,6 +156,23 @@ export const AppProvider = ({ children }) => {
     showToast(`สลับไปยังพื้นที่: ${ws.name}`, 'info');
   };
 
+  // Refresh workspaces list (e.g. after creating new workspace)
+  const refreshWorkspaces = async (autoSelectId = null) => {
+    try {
+      const wsList = await apiGetWorkspaces();
+      setWorkspaces(wsList);
+      if (autoSelectId && wsList) {
+        const found = wsList.find(w => w.id === autoSelectId);
+        if (found) {
+          setCurrentWorkspace(found);
+        }
+      }
+      return wsList;
+    } catch (e) {
+      console.error('Error refreshing workspaces:', e);
+    }
+  };
+
   const refreshGoogleStatus = async () => {
     try {
       const res = await apiGetGoogleStatus();
@@ -212,6 +229,7 @@ export const AppProvider = ({ children }) => {
         setDrilldownCategory,
         handleSwitchUser,
         handleSwitchWorkspace,
+        refreshWorkspaces,
         refreshData,
         showToast,
         triggerCelebration
