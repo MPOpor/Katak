@@ -5,6 +5,7 @@ import {
   apiGetCurrentUser,
   apiSwitchUser,
   apiGetWorkspaces,
+  apiDeleteWorkspace,
   apiGetCategories,
   apiGetOverview,
   apiGetGoogleStatus
