@@ -14,7 +14,8 @@ import {
   Sparkles,
   History,
   Cloud,
-  LogIn
+  LogIn,
+  Trash2
 } from 'lucide-react';
 import GoogleLoginModal from './modals/GoogleLoginModal';
 
@@ -27,6 +28,7 @@ export default function Header() {
     isMobileFrame,
     handleSwitchUser,
     handleSwitchWorkspace,
+    handleDeleteWorkspace,
     setIsMobileFrame,
     setIsWorkspaceModalOpen,
     setIsAuditModalOpen,
@@ -84,29 +86,48 @@ export default function Header() {
               </div>
               <div className="space-y-1">
                 {workspaces.map((ws) => (
-                  <button
+                  <div
                     key={ws.id}
-                    onClick={() => {
-                      handleSwitchWorkspace(ws);
-                      setIsWsDropdownOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all ${
+                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-all group ${
                       currentWorkspace?.id === ws.id
-                        ? 'bg-amber-50 text-[#D97706] font-semibold'
+                        ? 'bg-amber-50 text-[#D97706] font-semibold border border-amber-200/60'
                         : 'hover:bg-gray-50 text-gray-700'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleSwitchWorkspace(ws);
+                        setIsWsDropdownOpen(false);
+                      }}
+                      className="flex-1 flex items-center gap-2.5 text-left min-w-0"
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
                         {getWorkspaceIcon(ws.type)}
                       </div>
-                      <div>
-                        <div className="text-xs font-medium">{ws.name}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-medium truncate">{ws.name}</div>
                         <div className="text-[10px] text-gray-400">{ws.member_count || 1} สมาชิก</div>
                       </div>
+                    </button>
+
+                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-1">
+                      {getWorkspaceTypeBadge(ws.type)}
+                      {ws.id !== 'ws_thanachote' && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteWorkspace(ws.id, ws.name);
+                          }}
+                          title={`ลบพื้นที่ "${ws.name}"`}
+                          className="p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
-                    {getWorkspaceTypeBadge(ws.type)}
-                  </button>
+                  </div>
                 ))}
               </div>
 

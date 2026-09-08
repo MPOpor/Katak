@@ -158,6 +158,40 @@ router.put('/:id', (req, res) => {
   }
 });
 
+// Delete workspace
+router.delete('/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = getCurrentUserId();
+
+    if (id === 'ws_thanachote') {
+      return res.status(400).json({ success: false, error: 'ไม่สามารถลบพื้นที่หลักของร้านได้' });
+    }
+
+    const workspace = db.prepare('SELECT * FROM workspaces WHERE id = ?').get(id);
+    if (!workspace) {
+      return res.status(404).json({ success: false, error: 'ไม่พบพื้นที่การเงินนี้' });
+    }
+
+    const member = db.prepare('SELECT role FROM workspace_members WHERE workspace_id = ? AND user_id = ?').get(id, userId);
+    if (!member || member.role !== 'owner') {
+      return res.status(403).json({ success: false, error: 'เฉพาะเจ้าของพื้นที่เท่านั้นที่สามารถลบได้' });
+    }
+
+    db.prepare('DELETE FROM audit_logs WHERE workspace_id = ?').run(id);
+    db.prepare('DELETE FROM transactions WHERE workspace_id = ?').run(id);
+    db.prepare('DELETE FROM categories WHERE workspace_id = ?').run(id);
+    db.prepare('DELETE FROM workspace_invites WHERE workspace_id = ?').run(id);
+    db.prepare('DELETE FROM workspace_members WHERE workspace_id = ?').run(id);
+    db.prepare('DELETE FROM workspaces WHERE id = ?').run(id);
+
+    res.json({ success: true, message: `ลบพื้นที่การเงิน "${workspace.name}" สำเร็จ` });
+  } catch (error) {
+    console.error('Delete workspace error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Update member permissions (RBAC)
 router.put('/:id/members/:userId', (req, res) => {
   try {

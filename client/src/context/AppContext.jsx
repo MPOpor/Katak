@@ -173,6 +173,34 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // Delete workspace
+  const handleDeleteWorkspace = async (workspaceId, workspaceName) => {
+    if (workspaceId === 'ws_thanachote') {
+      showToast('ไม่สามารถลบพื้นที่หลักของร้านได้', 'warning');
+      return false;
+    }
+
+    const confirmDelete = window.confirm(`⚠️ ยืนยันการลบพื้นที่การเงิน "${workspaceName}" ใช่หรือไม่?\n\nรายการและข้อมูลทั้งหมดในพื้นที่นี้จะถูกลบถาวร`);
+    if (!confirmDelete) return false;
+
+    try {
+      await apiDeleteWorkspace(workspaceId);
+      showToast(`ลบพื้นที่ "${workspaceName}" เรียบร้อยแล้ว`, 'info');
+
+      const wsList = await apiGetWorkspaces();
+      setWorkspaces(wsList);
+
+      if (currentWorkspace?.id === workspaceId) {
+        const nextWs = wsList.find(w => w.id === 'ws_thanachote') || wsList[0] || null;
+        setCurrentWorkspace(nextWs);
+      }
+      return true;
+    } catch (err) {
+      showToast('ไม่สามารถลบพื้นที่การเงินได้: ' + err.message, 'error');
+      return false;
+    }
+  };
+
   const refreshGoogleStatus = async () => {
     try {
       const res = await apiGetGoogleStatus();
@@ -229,6 +257,7 @@ export const AppProvider = ({ children }) => {
         setDrilldownCategory,
         handleSwitchUser,
         handleSwitchWorkspace,
+        handleDeleteWorkspace,
         refreshWorkspaces,
         refreshData,
         showToast,

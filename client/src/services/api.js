@@ -49,6 +49,9 @@ export const apiUpdateWorkspace = (id, data) => fetchApi(`/workspaces/${id}`, {
   method: 'PUT',
   body: JSON.stringify(data)
 });
+export const apiDeleteWorkspace = (id) => fetchApi(`/workspaces/${id}`, {
+  method: 'DELETE'
+});
 export const apiUpdateMemberRole = (workspaceId, userId, data) => fetchApi(`/workspaces/${workspaceId}/members/${userId}`, {
   method: 'PUT',
   body: JSON.stringify(data)
