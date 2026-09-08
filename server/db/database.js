@@ -29,6 +29,27 @@ try {
   }
 }
 
+// Add transaction polyfill if missing (e.g. for node:sqlite DatabaseSync)
+if (!db.transaction) {
+  db.transaction = function (fn) {
+    return function (...args) {
+      db.exec('BEGIN TRANSACTION;');
+      try {
+        const result = fn(...args);
+        db.exec('COMMIT;');
+        return result;
+      } catch (err) {
+        try {
+          db.exec('ROLLBACK;');
+        } catch (rbErr) {
+          // ignore rollback error
+        }
+        throw err;
+      }
+    };
+  };
+}
+
 export function initDatabase() {
   db.exec(`
     -- 1. Users Table (Support LINE Login & Google OAuth 2.0 & Admin)
